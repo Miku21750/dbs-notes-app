@@ -1,0 +1,21 @@
+{
+    "name": "MyStory",
+    "short_name": "MyStory",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4f46e5",
+    "description": "Aplikasi berbagi Status Story dengan fitur kamera dan peta",
+    "icons": [
+        {
+            "src": "/icons/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/android-chrome-521x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

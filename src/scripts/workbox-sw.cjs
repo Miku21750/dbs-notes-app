@@ -8,6 +8,7 @@ workboxBuild.generateSW({
         '**/*.{html,js,css,png,jpg,svg,woff2,json}',
     ],
     swDest: 'dist/service-worker.js',
+    importScripts: ['/sw-notification.js'],
     runtimeCaching: [
         {
             urlPattern: ({request}) => request.destination === 'document',
@@ -41,17 +42,6 @@ workboxBuild.generateSW({
                 }
             }
         },
-        // {
-        //     urlPattern: /\.(?:png|jpg|jpeg|svg|gif|css)$/,
-        //     handler: 'CacheFirst',
-        //     options: {
-        //         cacheName: 'static-assets',
-        //         expiration: {
-        //         maxEntries: 50,
-        //         maxAgeSeconds: 30 * 24 * 60 * 60, // 30 hari
-        //         },
-        //     },
-        // },
         {
             urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com/,
             handler: 'StaleWhileRevalidate',

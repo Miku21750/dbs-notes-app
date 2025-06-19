@@ -56,25 +56,39 @@ export default class AddStoryPresenter {
             }, 'image/jpeg', 0.9)
         })
 
-        navigator.geolocation.getCurrentPosition((pos) => {
-            
-            const { latitude, longitude } = pos.coords;
-            const map = L.map('map').setView([latitude, longitude], 13);
+        const mapContainer = document.getElementById('map');
+        let map, marker = null;
+        const self = this;
+
+        function initializeMap(lat = 7.2756, lon = 112.6417, message = '') {
+            map = L.map(mapContainer).setView([lat, lon], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
-            let marker = null;
+
+            if(message){
+                L.popup()
+                    .setLatLng([lat, lon])
+                    .setContent(message)
+                    .openOn(map);
+            }
             map.on('click', (e) => {
-                this.selectedLat = e.latlng.lat;
-                this.selectedLon = e.latlng.lng;
+                self.selectedLat = e.latlng.lat;
+                self.selectedLon = e.latlng.lng;
     
                 if (marker) map.removeLayer(marker);
-                marker = L.marker([this.selectedLat, this.selectedLon]).addTo(map);
+                marker = L.marker([self.selectedLat, self.selectedLon]).addTo(map);
             })
+        }
+
+        navigator.geolocation.getCurrentPosition((pos) => {
+            const { latitude, longitude } = pos.coords;
+            initializeMap(latitude, longitude)
         }, (err) => {
             console.error('Geolocation error:', err);
             statusMsg.textContent = 'Gagal mendapatkan lokasi. Cerita akan disimpan tanpa lokasi.';
+            initializeMap();
         })
 
 

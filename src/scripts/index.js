@@ -59,6 +59,83 @@ function updateNavbar() {
     const toggleNotification = document.createElement('li');
     toggleNotification.innerHTML =  '<button id="toggle-push" aria-label="Toggle Notifikasi">🔔 Notifikasi</button>';
     navList.appendChild(toggleNotification);
+
+    if('serviceWorker' in navigator && 'PushManager' in window){
+      navigator.serviceWorker.ready.then((reg) => {
+        const toggleBtn = document.getElementById('toggle-push');
+        reg.pushManager.getSubscription().then(async (sub) =>{
+          let isSubscribed = !!sub;
+          updateButton();
+
+          toggleBtn.addEventListener('click', async () => {
+            toggleBtn.disabled = true;
+            const originalText = toggleBtn.textContent;
+            toggleBtn.textContent = 'Memproses...'
+            try {
+              
+              if(isSubscribed){
+                if(sub){
+                  await sub.unsubscribe();
+                  await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
+                    method: 'DELETE',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                    body: JSON.stringify({ endpoint: sub.endpoint }),
+                  })
+                  console.log('Unsubscribed');
+                  sub = null;
+                }
+              }else{
+                if ('Notification' in window && Notification.permission !== 'granted') {
+                  const permission = await Notification.requestPermission();
+                  if(permission !== 'granted'){
+                    alert("Notifikasi ditolak");
+                    return;
+                  }
+                }
+  
+                sub = await reg.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array('BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk'),      
+                })
+                const payload = {
+                  endpoint: sub.endpoint,
+                  keys: {
+                    p256dh: sub.toJSON().keys.p256dh,
+                    auth: sub.toJSON().keys.auth,
+                  },
+                };
+                const response = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe' , {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type' : 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem(`token`)}`
+                  },
+                  body: JSON.stringify(payload),
+                })
+  
+                console.log('Subscribed');
+              }
+  
+              isSubscribed = !isSubscribed
+              updateButton();
+            } catch (error) {
+              console.error('Gagal toggle notifikasi:', error);
+              alert('Gagal memproses permintaan notifikasi');
+            }finally {
+              updateButton();
+              toggleBtn.disabled = false
+            }
+          })
+
+          function updateButton() {
+            toggleBtn.textContent = isSubscribed ? '🔕 Nonaktifkan Notifikasi' : '🔔 Aktifkan Notifikasi';
+          }
+        })
+      })
+    }
   }else{
     const login = document.createElement('li');
     login.innerHTML = '<a href="#/login">Login</a>'
@@ -104,65 +181,7 @@ window.addEventListener('load', updateNavbar);
 window.addEventListener('hashchange', updateNavbar);
 
 window.addEventListener('load', () => {
-  if('serviceWorker' in navigator && 'PushManager' in window){
-    navigator.serviceWorker.ready.then((reg) => {
-      const toggleBtn = document.getElementById('toggle-push');
-      reg.pushManager.getSubscription().then(async (sub) =>{
-        let isSubscribed = !!sub;
-        updateButton();
-
-        toggleBtn.addEventListener('click', async () => {
-          if(isSubscribed){
-            await sub.unsubscribe();
-            await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe', {
-              method: 'DELETE',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${localStorage.getItem('token')}`,
-              },
-              body: JSON.stringify({ endpoint: sub.endpoint }),
-            })
-            console.log('Unsubscribed');
-          }else{
-            const permission = await Notification.requestPermission();
-            if(permission !== 'granted'){
-              alert("Notifikasi ditolak");
-              return;
-            }
-
-            const newSub = await reg.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array('BCCs2eonMI-6H2ctvFaWg-UYdDv387Vno_bzUzALpB442r2lCnsHmtrx8biyPi_E-1fSGABK_Qs_GlvPoJJqxbk'),      
-            })
-            const payload = {
-              endpoint: newSub.endpoint,
-              keys: {
-                p256dh: newSub.toJSON().keys.p256dh,
-                auth: newSub.toJSON().keys.auth,
-              },
-            };
-            const response = await fetch('https://story-api.dicoding.dev/v1/notifications/subscribe' , {
-              method: 'POST',
-              headers: {
-                'Content-Type' : 'application/json',
-                Authorization: `Bearer ${localStorage.getItem(`token`)}`
-              },
-              body: JSON.stringify(payload),
-            })
-
-            console.log('Subscribed');
-          }
-
-          isSubscribed = !isSubscribed
-          updateButton();
-        })
-
-        function updateButton() {
-          toggleBtn.textContent = isSubscribed ? '🔕 Nonaktifkan Notifikasi' : '🔔 Aktifkan Notifikasi';
-        }
-      })
-    })
-  }
+  
 })
 
 if('Notification' in window && Notification.permission !== 'granted'){

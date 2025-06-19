@@ -18,28 +18,14 @@ export default class HomePresenter  {
     async afterRender() {
         if(!isLoggedIn()) return;
 
-        window.addEventListener('online', () => {
-            alert('anda kembali online');
-            location.reload();
-        })
-
-        window.addEventListener('offline', () => {
-            alert('Anda offline');
-            location.reload();
-        })
+        
         
         try {
             const response = await HomeModel.getStories();
             const stories = response.listStory || [];
             await HomeView.showStories(stories, showFormattedDate);
             if(!navigator.onLine){
-                const storyList = document.getElementById('stories-list');
-                const mapContainer = document.getElementById('map');
-                const offlineMessage = document.getElementById('offline-message')
-
-                if(storyList) storyList.style.display = 'none';
-                if(mapContainer) mapContainer.style.display = 'none';
-                if(offlineMessage && isLoggedIn()) offlineMessage.style.display = 'block'
+                this._showOfflineMessage();
             }
             document.querySelectorAll('.save-offline').forEach((btn) =>{
                 btn.addEventListener('click', async (e) => {
@@ -52,5 +38,16 @@ export default class HomePresenter  {
         } catch (e) {
             console.error('Gagal memuat data: ', e)
         }
+    }
+
+    
+    _showOfflineMessage() {
+    const storyList = document.getElementById('stories-list');
+    const mapContainer = document.getElementById('map');
+    const offlineMessage = document.getElementById('offline-message');
+
+    if (storyList) storyList.style.display = 'none';
+    if (mapContainer) mapContainer.style.display = 'none';
+    if (offlineMessage && isLoggedIn()) offlineMessage.style.display = 'block';
     }
 }

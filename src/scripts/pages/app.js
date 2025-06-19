@@ -33,7 +33,29 @@ class App {
         }
       });
     });
+
+    let hasAlerted = false;
+  
+    window.addEventListener('online', () => {
+      if (hasAlerted) return;
+      hasAlerted = true;
+      alert('Anda kembali online');
+      location.reload();
+    });
+  
+    window.addEventListener('offline', () => {
+      if (hasAlerted) return;
+      hasAlerted = true;
+      alert('Anda offline');
+      location.reload();
+    });
+
+    window.addEventListener('load', () => {
+      hasAlerted = false;
+    });
+
   }
+
 
   async renderPage() {
     const url = getActiveRoute();

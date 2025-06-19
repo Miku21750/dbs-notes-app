@@ -18,8 +18,10 @@ const OfflineStoriesView = {
         stories.forEach(story => {
             const storyElement = document.createElement('div');
             storyElement.classList.add('story-item');
+
+            const imageUrl = story.imageBlob ? URL.createObjectURL(story.imageBlob) : '';
             storyElement.innerHTML = `
-                <img src="${story.photoUrl}" alt="${story.name}" />
+                <img src="${imageUrl}" alt="${story.name}" />
                 <h2>${story.name}</h2>
                 <p>${story.description}</p>
                 <button class="delete-offline" data-id="${story.id}">🗑️ Hapus</button>

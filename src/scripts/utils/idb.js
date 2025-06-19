@@ -14,7 +14,15 @@ export const dbPromise = openDB(DB_NAME, DB_VERSION, {
 
 export async function saveStoryOffline(story) {
     const db = await dbPromise;
-    await db.put(STORE_NAME, story);
+
+    const response = await fetch(story.photoUrl);
+    const imageBlob = await response.blob();
+
+    const storyWithImage = {
+        ...story,
+        imageBlob,
+    }
+    await db.put(STORE_NAME, storyWithImage);
 }
 
 export async function getAllOfflineStories() {
